@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catatan Keuangan Pribadi</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f6; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: #ffffff; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #34495e; }
+        input[type="text"], input[type="number"], input[type="date"], select, textarea { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 1rem; }
+        button { width: 100%; padding: 0.85rem; background-color: #3498db; color: white; border: none; border-radius: 5px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background-color 0.3s ease; }
+        button:hover { background-color: #2980b9; }
+        #status-message { text-align: center; margin-top: 1.5rem; padding: 1rem; border-radius: 5px; font-weight: bold; display: none; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Catatan Keuangan</h1>
+    <form id="finance-form">
+        <div class="form-group"><label for="tipe">Tipe Transaksi</label><select id="tipe" name="tipe" required><option value="" disabled selected>-- Pilih Tipe --</option><option value="Pemasukan">Pemasukan</option><option value="Pengeluaran">Pengeluaran</option></select></div>
+        <div class="form-group"><label for="tanggal">Tanggal</label><input type="date" id="tanggal" name="tanggal" required></div>
+        <div class="form-group"><label for="kategori">Kategori</label><select id="kategori" name="kategori" required><option value="" disabled selected>-- Pilih Tipe Dulu --</option></select></div>
+        <div class="form-group"><label for="jumlah">Jumlah (Rp)</label><input type="number" id="jumlah" name="jumlah" placeholder="misal: 50000" required></div>
+        <div class="form-group"><label for="deskripsi">Deskripsi</label><input type="text" id="deskripsi" name="deskripsi" placeholder="misal: Beli makan siang" required></div>
+        <div class="form-group"><label for="akun">Akun / E-Wallet</label><input type="text" id="akun" name="akun" placeholder="misal: Tunai, Bank BCA, Gopay"></div>
+        <div class="form-group"><label for="catatan">Catatan Tambahan (Opsional)</label><textarea id="catatan" name="catatan" rows="3" placeholder="Informasi lain..."></textarea></div>
+        <button type="submit">Simpan Transaksi</button>
+    </form>
+    <div id="status-message"></div>
+</div>
+<script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyDddBylYeAHfSrUIuOKbCenCWwENhD61VuWoJNApY4cbxueKgXpI1mYB1O92TkNKVlGQ/exec';
+    const categories = { Pemasukan: ['Gaji', 'Freelance', 'Bonus', 'Investasi', 'Penjualan', 'Hadiah', 'Lainnya'], Pengeluaran: ['Makanan & Minuman', 'Transportasi', 'Belanja', 'Tagihan', 'Hiburan', 'Kesehatan', 'Pendidikan', 'Donasi', 'Lainnya'] };
+    const form = document.getElementById('finance-form'); const tipeSelect = document.getElementById('tipe'); const kategoriSelect = document.getElementById('kategori'); const statusDiv = document.getElementById('status-message');
+    document.getElementById('tanggal').valueAsDate = new Date();
+    tipeSelect.addEventListener('change', () => { const selectedTipe = tipeSelect.value; kategoriSelect.innerHTML = '<option value="" disabled selected>-- Pilih Kategori --</option>'; if (selectedTipe) { categories[selectedTipe].forEach(cat => { const option = document.createElement('option'); option.value = cat; option.textContent = cat; kategoriSelect.appendChild(option); }); } });
+    form.addEventListener('submit', (e) => { e.preventDefault(); submitData(); });
+    function submitData() { statusDiv.style.display = 'block'; statusDiv.className = ''; statusDiv.textContent = 'Menyimpan data...'; const formData = new FormData(form); fetch(SCRIPT_URL, { method: 'POST', body: formData }).then(response => response.json()).then(data => { if (data.status === 'success') { statusDiv.className = 'success'; statusDiv.textContent = data.message; form.reset(); document.getElementById('tanggal').valueAsDate = new Date(); kategoriSelect.innerHTML = '<option value="" disabled selected>-- Pilih Tipe Dulu --</option>'; } else { statusDiv.className = 'error'; statusDiv.textContent = data.message; } }).catch(error => { statusDiv.className = 'error'; statusDiv.textContent = 'Terjadi kesalahan. Error: ' + error; }); }
+</script>
+</body>
+</html>
